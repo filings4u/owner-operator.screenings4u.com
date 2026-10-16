@@ -41,6 +41,8 @@ const featureByPage={
 
 const state={session:null,context:null,entitlements:{},permissions:[],onboarding:null,clearinghouse:null};
 const pageCache=new Map();
+// Share identical concurrent API requests (navigation, hover prefetch and cache warming).
+const pendingOwnerRequests=new Map();
 const PAGE_CACHE_TTL=30*1000;
 const STALE_CACHE_TTL=10*60*1000;
 const ALWAYS_FRESH_ACTIONS=new Set();
@@ -276,20 +278,24 @@ async function owner(action,extra={}){
   const payload=window.S4UWithPortal?window.S4UWithPortal({action,...extra}):{action,...extra};
   const cacheable=(!extra||Object.keys(extra).length===0)&&!ALWAYS_FRESH_ACTIONS.has(action);
   const key='owner:'+action;
+  const fetchOnce=()=>{
+    if(pendingOwnerRequests.has(key))return pendingOwnerRequests.get(key);
+    const pending=edge("owner-operator-portal-fast",payload).then(data=>{
+      if(cacheable){const entry={ts:Date.now(),data};pageCache.set(key,entry);writePersistentCache(key,entry)}
+      return data;
+    }).finally(()=>{if(pendingOwnerRequests.get(key)===pending)pendingOwnerRequests.delete(key)});
+    pendingOwnerRequests.set(key,pending);
+    return pending;
+  };
   if(cacheable){
     let hit=pageCache.get(key);
     if(!hit){hit=readPersistentCache(key);if(hit)pageCache.set(key,hit)}
     if(hit){
-      const age=Date.now()-Number(hit.ts||0);
-      if(age>PAGE_CACHE_TTL){
-        edge("owner-operator-portal-fast",payload).then(data=>{const entry={ts:Date.now(),data};pageCache.set(key,entry);writePersistentCache(key,entry)}).catch(()=>{});
-      }
+      if(Date.now()-Number(hit.ts||0)>PAGE_CACHE_TTL)fetchOnce().catch(()=>{});
       return hit.data;
     }
   }
-  const data=await edge("owner-operator-portal-fast",payload);
-  if(cacheable){const entry={ts:Date.now(),data};pageCache.set(key,entry);writePersistentCache(key,entry)}
-  return data;
+  return fetchOnce();
 }
 async function members(action,extra={}){return edge("owner-operator-members",{action,...extra})}
 async function onboardingApi(action,extra={}){
@@ -499,6 +505,11 @@ async function loadClearinghouseSetup(){
 }
 
 async function loadDashboard(){
+ // Show a usable shell immediately instead of a blank content area on cold loads.
+ if(!pageCache.has('owner:overview')&&!readPersistentCache('owner:overview')){
+   const root=document.getElementById("page-content");
+   if(root)root.innerHTML=pageHead("OWNER-OPERATOR DOT WORKSPACE","Your DOT program at a glance","Loading your program information…")+pageSpinner("Loading dashboard data…");
+ }
  const d=await owner("overview");
  const ownerObj=d.owner||{};
  const testing=d.testing||[], compliance=d.compliance||[], docs=(d.document_packets||d.documents||[]).filter(x=>String(x.document_status||x.status||"published").toLowerCase()==="published"), programs=d.programs||[], drivers=d.drivers||[];
