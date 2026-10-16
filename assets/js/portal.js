@@ -238,6 +238,8 @@ async function guard(){
   const org=document.getElementById("org-name");
   if(org)org.textContent=w.organization_name||w.organization?.dba_name||w.organization?.legal_name||w.owner_operator?.legal_name||"Owner-Operator Portal";
   state.onboarding=boot.onboarding||null;
+  state.onboardingForm=boot.onboarding_form||null;
+  state.onboardingProfile=boot.onboarding_profile||null;
   state.clearinghouse=boot.clearinghouse||null;
 
   // The security guard has already fetched and verified current onboarding state.
@@ -309,7 +311,7 @@ async function clearinghouseApi(action,extra={}){
 
 async function loadOnboarding(){
  const root=document.getElementById("page-content");
- let d=state.onboarding||null;
+ let d=state.onboardingForm||null;
  let profileState=state.onboardingProfile||null;
  if(!d?.prefill||!profileState){
    const tasks=[];
