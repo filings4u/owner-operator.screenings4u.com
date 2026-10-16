@@ -60,6 +60,16 @@ async function guard(){
   }catch{}
   if(!d){
     ({r,d}=await requestContext());
+    if(r.status===403){
+      const mk='s4u_'+CODE+'_membership',sk='s4u_'+CODE+'_subscription';
+      const priorM=localStorage.getItem(mk),priorS=localStorage.getItem(sk);
+      if(priorM||priorS){
+        localStorage.removeItem(mk);localStorage.removeItem(sk);
+        const fresh=await requestContext();
+        if(fresh.r.ok&&!fresh.d?.error){r=fresh.r;d=fresh.d}
+        else{if(priorM)localStorage.setItem(mk,priorM);if(priorS)localStorage.setItem(sk,priorS)}
+      }
+    }
     if(r.ok&&!d?.error){try{sessionStorage.setItem(BOOT_KEY,JSON.stringify({ts:Date.now(),user_id:session.user.id,data:d}))}catch{}}
   }else{
     // Revalidate silently after the page is already usable.
