@@ -4,18 +4,7 @@ const cfg=window.S4U;
 const supabase=window.S4UGetSupabaseClient();
 const msg=(text,cls="")=>{const e=document.getElementById("auth-msg");if(e){e.textContent=text;e.className="auth-msg "+cls}};
 
-async function route(){
- const {data:{session}}=await supabase.auth.getSession();
- if(!session)return false;
- try{
-  const r=await fetch(cfg.api+"/owner-operator-session",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token,"apikey":cfg.key},body:JSON.stringify(window.S4UWithPortal({portal_code:"owner_operator",requested_portal_code:"owner_operator",page:"auth-handoff"}))});
-  const j=await r.json().catch(()=>({}));
-  if(!r.ok||j.error)throw new Error(j.error||"Owner-Operator access is not available.");
-  const next=new URLSearchParams(location.search).get("next")||"/dashboard.html";
-  location.replace(next.startsWith("/")?next:"/dashboard.html");
-  return true;
- }catch(e){msg(e.message,"error");return false}
-}
+async function route(){const {data:{session}}=await supabase.auth.getSession();if(!session)return false;location.replace("/dashboard.html");return true}
 window.addEventListener("DOMContentLoaded",async()=>{
  if(location.pathname.endsWith("/auth-handoff.html")){
    msg("Completing secure sign-in…");
@@ -37,7 +26,7 @@ window.addEventListener("DOMContentLoaded",async()=>{
        if(destination.origin!==location.origin||!["/dashboard.html","/ctpa/dashboard.html"].includes(destination.pathname))throw Error("Invalid Owner-Operator destination.");
      }catch(e){msg((e?.message||"Unable to complete secure sign-in.")+" Return to the central portal selector to try again.","error");const back=document.createElement("a");back.href="https://portal.screenings4u.com/selector.html";back.textContent="Return to Portal Selector";back.className="btn primary";document.getElementById("auth-msg")?.after(back);return}
    }
-   await route(); return;
+   const ok=await route();if(!ok)msg("Sign-in failed. Return to the central portal selector.","error");return;
  }
  if(location.pathname.endsWith("/reset-password.html")){
    document.getElementById("reset-form")?.addEventListener("submit",async e=>{
