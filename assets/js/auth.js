@@ -2,7 +2,7 @@
 (function(){
 const cfg=window.S4U;
 const supabase=window.S4UGetSupabaseClient();
-const msg=(text,cls="")=>{const e=document.getElementById("auth-msg");if(e){e.textContent=text;e.className="auth-msg "+cls}};
+const msg=(text,cls="")=>{const e=document.getElementById("auth-msg");if(e){e.textContent=text;e.className="auth-msg "+cls;if(cls==="error"){e.style.cssText="position:fixed;inset:0;display:grid;place-items:center;padding:30px;background:#16355e;color:white;font:600 16px Arial,sans-serif;text-align:center"}}};
 
 async function route(){const {data:{session}}=await supabase.auth.getSession();if(!session)return false;location.replace("/dashboard.html");return true}
 window.addEventListener("DOMContentLoaded",async()=>{
