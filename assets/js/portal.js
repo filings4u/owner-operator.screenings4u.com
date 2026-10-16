@@ -205,7 +205,7 @@ function renderShell(){
   });
 }
 
-function waitForBootstrap(timeoutMs=8000){
+function waitForBootstrap(timeoutMs=30000){
   if(window.__S4U_OWNER_BOOTSTRAP__)return Promise.resolve(window.__S4U_OWNER_BOOTSTRAP__);
   return new Promise((resolve,reject)=>{
     let done=false;
