@@ -150,7 +150,7 @@ function renderShell(){
           </div>
         </div>
 
-        <div class="content" id="page-content">${pageSpinner("Opening your Owner-Operator portal…")}</div>
+        <div class="content" id="page-content">${path==="onboarding.html"?pageHead("GETTING STARTED","Owner-Operator onboarding","Complete your enrollment requirements to access your workspace."):""}</div>
       </main>
     </div>`;
 
@@ -975,7 +975,7 @@ async function renderCurrentPage(){
   const root=document.getElementById('page-content');
   if(root){root.setAttribute('aria-busy','true');root.classList.toggle('dashboard-page',page==='dashboard.html')}
   let spinnerTimer=null;
-  if(root)spinnerTimer=setTimeout(()=>{if(root.getAttribute('aria-busy')==='true')root.innerHTML=pageSpinner()},70);
+  // Preserve the immediately rendered content while the authorized page data loads.
   try{
     const required=featureByPage[page];
     if(required && state.entitlements && Object.keys(state.entitlements).length && state.entitlements[required]===false)throw new Error("This page is not included in your current Owner-Operator plan.");
