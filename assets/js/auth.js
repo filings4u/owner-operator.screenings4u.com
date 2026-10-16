@@ -24,7 +24,19 @@ window.addEventListener("DOMContentLoaded",async()=>{
      await supabase.auth.setSession({access_token:hash.get("access_token"),refresh_token:hash.get("refresh_token")});
    }
    const code=new URLSearchParams(location.search).get("code");
-   if(code){await supabase.auth.exchangeCodeForSession(code).catch(()=>{})}
+   if(code){
+     history.replaceState(null,"","/auth-handoff.html");
+     try{
+       if(!/^[0-9a-f]{64}$/i.test(code))throw Error("Invalid secure sign-in link.");
+       const response=await fetch(cfg.api+"/portal-session-handoff",{method:"POST",headers:{"Content-Type":"application/json","apikey":cfg.key},body:JSON.stringify({action:"redeem",code})});
+       const handoff=await response.json().catch(()=>({}));
+       if(!response.ok||!handoff.token_hash||handoff.target_portal!=="owner_operator"||handoff.target_surface!=="dot")throw Error(handoff.error||"Owner-Operator handoff was not authorized.");
+       const {data,error}=await supabase.auth.verifyOtp({token_hash:handoff.token_hash,type:"magiclink"});
+       if(error||!data?.session)throw error||Error("Unable to establish a secure session.");
+       const destination=new URL(handoff.next_path||"/dashboard.html",location.origin);
+       if(destination.origin!==location.origin||!["/dashboard.html","/ctpa/dashboard.html"].includes(destination.pathname))throw Error("Invalid Owner-Operator destination.");
+     }catch(e){msg(e.message||"Unable to complete secure sign-in.","error");return}
+   }
    await route(); return;
  }
  if(location.pathname.endsWith("/reset-password.html")){
