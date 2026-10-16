@@ -279,12 +279,12 @@ async function owner(action,extra={}){
   const cacheable=(!extra||Object.keys(extra).length===0)&&!ALWAYS_FRESH_ACTIONS.has(action);
   const key='owner:'+action;
   const fetchOnce=()=>{
-    if(pendingOwnerRequests.has(key))return pendingOwnerRequests.get(key);
+    if(cacheable&&pendingOwnerRequests.has(key))return pendingOwnerRequests.get(key);
     const pending=edge("owner-operator-portal-fast",payload).then(data=>{
       if(cacheable){const entry={ts:Date.now(),data};pageCache.set(key,entry);writePersistentCache(key,entry)}
       return data;
-    }).finally(()=>{if(pendingOwnerRequests.get(key)===pending)pendingOwnerRequests.delete(key)});
-    pendingOwnerRequests.set(key,pending);
+    }).finally(()=>{if(cacheable&&pendingOwnerRequests.get(key)===pending)pendingOwnerRequests.delete(key)});
+    if(cacheable)pendingOwnerRequests.set(key,pending);
     return pending;
   };
   if(cacheable){
