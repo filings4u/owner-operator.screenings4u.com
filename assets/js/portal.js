@@ -45,7 +45,7 @@ const PAGE_CACHE_TTL=30*1000;
 const STALE_CACHE_TTL=10*60*1000;
 const ALWAYS_FRESH_ACTIONS=new Set();
 const PERSIST_CACHE_PREFIX='s4u_owner_page_cache:v2:';
-const PREFETCH_ACTIONS=['overview','profile','drivers','programs','consortium','testing','results','compliance','rtd','documents','reports','billing','notifications','audit'];
+const PREFETCH_ACTIONS=['profile','drivers','programs'];
 function readPersistentCache(key,ttl=STALE_CACHE_TTL){try{const x=JSON.parse(sessionStorage.getItem(PERSIST_CACHE_PREFIX+key)||'null');if(x&&Date.now()-Number(x.ts||0)<ttl)return x}catch{}return null}
 function writePersistentCache(key,entry){try{sessionStorage.setItem(PERSIST_CACHE_PREFIX+key,JSON.stringify(entry))}catch{}}
 function deletePageCache(key){pageCache.delete(key);try{sessionStorage.removeItem(PERSIST_CACHE_PREFIX+key)}catch{}}
@@ -946,13 +946,14 @@ function warmPortalCache(){
   window.__S4U_OWNER_CACHE_WARMING__=true;
   const run=async()=>{
     const queue=PREFETCH_ACTIONS.filter(a=>{const k='owner:'+a;const m=pageCache.get(k)||readPersistentCache(k);if(m){pageCache.set(k,m);return false}return true});
-    const workers=Array.from({length:4},async()=>{
+    const workers=Array.from({length:1},async()=>{
       while(queue.length){const action=queue.shift();if(!action)break;try{await owner(action)}catch{}}
     });
     await Promise.all(workers);
     window.__S4U_OWNER_CACHE_WARMED__=true;
   };
-  setTimeout(run,0);
+  // Avoid competing with page rendering, session bootstrap, and the current network request.
+  setTimeout(run,1500);
 }
 function currentPage(){return (location.pathname.split("/").pop()||"dashboard.html").toLowerCase()}
 function onboardingLocked(){return !!(state.onboarding && state.onboarding.completed!==true && state.clearinghouse?.completed!==true)}
