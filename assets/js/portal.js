@@ -134,7 +134,7 @@ function renderShell(){
               <button type="button" id="fontReset" class="font-reset">Default</button>
               <button type="button" id="fontUp" aria-label="Increase text size">A+</button>
             </div>
-            <a class="top-support" href="/support.html">Support</a>
+            <a class="top-support" href="/support.html">Support</a><a href="https://portal.screenings4u.com/selector.html" id="s4uSwitchPortal" aria-label="Switch portal" style="display:none;align-items:center;justify-content:center;padding:9px 13px;border-radius:9px;background:#ff6b00;color:#fff;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap">↔ Switch Portal</a>
             <button class="signout" id="signout-btn" type="button">Sign out</button>
           </div>
         </header>
@@ -226,6 +226,8 @@ async function guard(){
   // the visible refresh/flicker caused by two guards racing each other.
   const boot=await waitForBootstrap();
   if(!boot)throw new Error('Unable to verify Owner-Operator portal access.');
+  const switchLink=document.getElementById("s4uSwitchPortal");
+  if(switchLink)switchLink.style.display=boot.show_portal_switcher===true?"inline-flex":"none";
   const ctx=boot.context||boot;
   const w=ctx.workspace||ctx.context||ctx;
   const portal=String(w.portal||ctx.portal_code||ctx.access?.portal_code||"");
