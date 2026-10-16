@@ -35,7 +35,7 @@ window.addEventListener("DOMContentLoaded",async()=>{
        if(error||!data?.session)throw error||Error("Unable to establish a secure session.");
        const destination=new URL(handoff.next_path||"/dashboard.html",location.origin);
        if(destination.origin!==location.origin||!["/dashboard.html","/ctpa/dashboard.html"].includes(destination.pathname))throw Error("Invalid Owner-Operator destination.");
-     }catch(e){msg(e.message||"Unable to complete secure sign-in.","error");return}
+     }catch(e){msg((e?.message||"Unable to complete secure sign-in.")+" Return to the central portal selector to try again.","error");const back=document.createElement("a");back.href="https://portal.screenings4u.com/selector.html";back.textContent="Return to Portal Selector";back.className="btn primary";document.getElementById("auth-msg")?.after(back);return}
    }
    await route(); return;
  }
