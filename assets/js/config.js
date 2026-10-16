@@ -22,7 +22,7 @@ window.PORTAL_CONFIG=Object.freeze({
     window.__S4U_OWNER_OPERATOR_CLIENT__=window.supabase.createClient(
       C.workforceUrl,
       C.workforceKey,
-      {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:AUTH_KEY}}
+      {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:!location.pathname.endsWith('/auth-handoff.html'),storageKey:AUTH_KEY}}
     );
     return window.__S4U_OWNER_OPERATOR_CLIENT__;
   };
