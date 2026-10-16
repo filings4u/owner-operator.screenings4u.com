@@ -240,18 +240,8 @@ async function guard(){
   state.onboarding=boot.onboarding||null;
   state.clearinghouse=boot.clearinghouse||null;
 
-  // Never lock navigation from a stale bootstrap snapshot. Re-read the live
-  // onboarding/Clearinghouse state before deciding that the workspace is locked.
-  if(state.onboarding?.completed!==true && state.clearinghouse?.completed!==true){
-    try{
-      const fresh=await edge("owner-operator-bootstrap",{page:page.replace(".html","")});
-      if(fresh?.context)state.context=fresh.context;
-      if(fresh?.onboarding)state.onboarding=fresh.onboarding;
-      if(fresh?.clearinghouse)state.clearinghouse=fresh.clearinghouse;
-      try{sessionStorage.removeItem('s4u_owner_bootstrap_cache')}catch{}
-    }catch{}
-  }
-
+  // The security guard has already fetched and verified current onboarding state.
+  // Do not block first paint with a redundant second bootstrap request.
   if(state.clearinghouse?.completed===true){
     state.onboarding={...(state.onboarding||{}),completed:true};
   }
