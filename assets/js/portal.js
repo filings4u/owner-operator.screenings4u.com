@@ -243,6 +243,11 @@ async function guard(){
   state.onboardingForm=boot.onboarding_form||null;
   state.onboardingProfile=boot.onboarding_profile||null;
   state.clearinghouse=boot.clearinghouse||null;
+  // A completed form and locked owner profile mean Step 1 is complete, even if
+  // the aggregate onboarding flag is stale. Keep navigation in sync with the UI.
+  if(state.onboardingForm?.completed===true && (state.onboardingProfile?.completed===true || state.onboardingProfile?.locked===true)){
+    state.onboarding={...(state.onboarding||{}),completed:true};
+  }
 
   // The security guard has already fetched and verified current onboarding state.
   // Do not block first paint with a redundant second bootstrap request.
