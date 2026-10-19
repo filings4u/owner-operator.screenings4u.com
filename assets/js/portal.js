@@ -13,6 +13,7 @@ const NAV=[
   ["programs.html","≡","DOT Program"],
   ["consortium.html","◉","Consortium"],
   ["testing.html","◆","Testing"],
+  ["order-drug-test.html","＋","Order Drug Test"],
   ["results.html","✓","Results"],
   ["compliance.html","⚑","Compliance"],
   ["rtd.html","↻","Return-to-Duty"],
@@ -455,7 +456,7 @@ async function loadOnboarding(){
 async function loadDrugTestOrder(){
  const d=await onboardingApi('status'),p=d.prefill||{},root=document.getElementById('page-content');
  state.onboarding={...(state.onboarding||{}),...d};
- if(d.preemployment_complete){navigatePortal('/onboarding.html',{replace:true});return}
+ if(d.preemployment_complete){root.innerHTML=pageHead('DRUG TESTING','Order a Drug Test','Your plan-included onboarding test has already been recorded. You can request another test through the purchase flow.')+'<div class="card"><h2>DOT 5-Panel Urine Drug Test</h2><p>Your included pre-employment test has been used or submitted. Additional tests are purchased separately.</p><a class="btn btn-primary" href="/checkout.html?service=dot_5_panel_urine">Order Another Test</a></div>';return}
  if(!d.agreement_completed){navigatePortal('/onboarding.html',{replace:true});return}
  const paidOrder=new URLSearchParams(location.search).get('order_id')||localStorage.getItem('s4u_owner_operator_paid_test_order')||'';
  if(!d.test_included&&!paidOrder){await navigatePortal(d.purchase_url||'/checkout.html?service=dot_5_panel_urine',{replace:true});return}
@@ -975,7 +976,7 @@ function syncActiveNav(){
   document.querySelectorAll('.side .nav a,.mobile-nav-links a').forEach(a=>{
     const href=(a.getAttribute('href')||'').split('?')[0].split('#')[0].replace(/^\//,'').toLowerCase();
     a.classList.toggle('active',href===page);
-    const allowed=!locked||href==='onboarding.html'||href==='support.html';
+    const allowed=!locked||href==='onboarding.html'||href==='order-drug-test.html'||href==='support.html';
     a.classList.toggle('onboarding-disabled',!allowed);
     if(!allowed){a.setAttribute('aria-disabled','true');a.setAttribute('tabindex','-1')}else{a.removeAttribute('aria-disabled');a.removeAttribute('tabindex')}
   });
@@ -1031,7 +1032,7 @@ function bindSpaNavigation(){
     const u=new URL(a.href,location.href);if(u.origin!==location.origin)return;
     if(!/\.html$/i.test(u.pathname))return;
     const next=(u.pathname.split('/').pop()||'').toLowerCase();
-    if(onboardingLocked()&&a.closest('.side,.mobile-nav')&&!['onboarding.html','support.html'].includes(next)){
+    if(onboardingLocked()&&a.closest('.side,.mobile-nav')&&!['onboarding.html','order-drug-test.html','support.html'].includes(next)){
       e.preventDefault();
       (async()=>{
         try{
