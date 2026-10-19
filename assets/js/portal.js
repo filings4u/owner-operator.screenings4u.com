@@ -479,7 +479,7 @@ async function loadCheckout(){
  state.onboarding={...(state.onboarding||{}),...d};
  if(d.preemployment_complete){navigatePortal('/onboarding.html',{replace:true});return}
  if(!d.agreement_completed){navigatePortal('/onboarding.html',{replace:true});return}
- if(d.test_included){await navigatePortal('/order-drug-test.html',{replace:true});return}
+ if(d.test_included && !d.preemployment_complete){await navigatePortal('/order-drug-test.html',{replace:true});return}
  root.innerHTML=pageHead('SECURE CHECKOUT','Purchase your DOT 5-panel drug test','Complete payment securely inside your Owner-Operator portal. You will remain in the portal for the entire process.')+`
  <div class="grid grid-2 checkout-portal-grid">
   <div class="card"><div class="step-kicker">DOT PRE-EMPLOYMENT TEST</div><h2>DOT 5-Panel Urine Drug Test</h2><p>Required when you do not have an acceptable official negative DOT drug-test result dated within the last 30 days.</p><div class="price-line"><strong>$59.95</strong><span>one-time</span></div><ul class="agreement-list"><li>DOT-regulated 5-panel urine test</li><li>Collection-site scheduling support</li><li>Results linked to your Owner-Operator account</li><li>Secure portal workflow</li></ul><div class="agreement-callout"><strong>Seller:</strong> Workforce DOT, LLC<br><span>A subsidiary of screenings4u, LLC</span></div></div>
