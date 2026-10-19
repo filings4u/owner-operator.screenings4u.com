@@ -457,6 +457,8 @@ async function loadOnboarding(){
 async function loadDrugTestOrder(){
  const d=await onboardingApi('status'),p=d.prefill||{},root=document.getElementById('page-content');
  state.onboarding={...(state.onboarding||{}),...d};
+ const ownerCtx=state.context?.owner_operator||state.context?.ctx?.owner_operator||{};
+ if(Number(ownerCtx.metadata?.complimentary_preemployment_test_credits||0)>0 || ['owner_operator_plus','owner_operator_complete'].includes(String(state.context?.plan?.code||'')))d.test_included=true;
  if(d.preemployment_complete){root.innerHTML=pageHead('DRUG TESTING','Order a Drug Test','Your plan-included onboarding test has already been recorded. You can request another test through the purchase flow.')+'<div class="card"><h2>DOT 5-Panel Urine Drug Test</h2><p>Your included pre-employment test has been used or submitted. Additional tests are purchased separately.</p><a class="btn btn-primary" href="/checkout.html?service=dot_5_panel_urine">Order Another Test</a></div>';return}
  if(!(d.agreement_completed||state.onboardingForm?.completed===true||state.onboarding?.agreement_completed===true)){root.innerHTML=pageHead('DRUG TESTING','Order a Drug Test','Finish your required consortium agreement to submit a test order.')+'<div class="card"><h2>Complete onboarding first</h2><p>The drug-test request is available after your consortium agreement is signed.</p><a class="btn btn-primary" href="/onboarding.html">Continue Onboarding</a></div>';return}
  const paidOrder=new URLSearchParams(location.search).get('order_id')||localStorage.getItem('s4u_owner_operator_paid_test_order')||'';
