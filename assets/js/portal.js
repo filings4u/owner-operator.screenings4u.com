@@ -453,7 +453,8 @@ async function loadOnboarding(){
 }
 
 async function loadDrugTestOrder(){
- const d=state.onboarding||await onboardingApi('status'),p=d.prefill||{},root=document.getElementById('page-content');
+ const d=await onboardingApi('status'),p=d.prefill||{},root=document.getElementById('page-content');
+ state.onboarding={...(state.onboarding||{}),...d};
  if(d.preemployment_complete){navigatePortal('/onboarding.html',{replace:true});return}
  if(!d.agreement_completed){navigatePortal('/onboarding.html',{replace:true});return}
  const paidOrder=new URLSearchParams(location.search).get('order_id')||localStorage.getItem('s4u_owner_operator_paid_test_order')||'';
@@ -473,7 +474,8 @@ async function loadDrugTestOrder(){
 }
 
 async function loadCheckout(){
- const d=state.onboarding||await onboardingApi('status'),p=d.prefill||{},root=document.getElementById('page-content');
+ const d=await onboardingApi('status'),p=d.prefill||{},root=document.getElementById('page-content');
+ state.onboarding={...(state.onboarding||{}),...d};
  if(d.preemployment_complete){navigatePortal('/onboarding.html',{replace:true});return}
  if(!d.agreement_completed){navigatePortal('/onboarding.html',{replace:true});return}
  if(d.test_included){await navigatePortal('/order-drug-test.html',{replace:true});return}
