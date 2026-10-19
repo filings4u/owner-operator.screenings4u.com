@@ -198,6 +198,7 @@ function renderShell(){
       e.preventDefault();
       e.stopImmediatePropagation();
       const href=a.getAttribute('href')||'/dashboard.html';
+      if(href.split('?')[0]==='/order-drug-test.html'){location.assign(href);return;}
       try{await navigatePortal(href)}catch(err){console.error(err);location.assign(href)}
     });
   });
@@ -457,9 +458,9 @@ async function loadDrugTestOrder(){
  const d=await onboardingApi('status'),p=d.prefill||{},root=document.getElementById('page-content');
  state.onboarding={...(state.onboarding||{}),...d};
  if(d.preemployment_complete){root.innerHTML=pageHead('DRUG TESTING','Order a Drug Test','Your plan-included onboarding test has already been recorded. You can request another test through the purchase flow.')+'<div class="card"><h2>DOT 5-Panel Urine Drug Test</h2><p>Your included pre-employment test has been used or submitted. Additional tests are purchased separately.</p><a class="btn btn-primary" href="/checkout.html?service=dot_5_panel_urine">Order Another Test</a></div>';return}
- if(!d.agreement_completed){navigatePortal('/onboarding.html',{replace:true});return}
+ if(!d.agreement_completed){root.innerHTML=pageHead('DRUG TESTING','Order a Drug Test','Finish your required consortium agreement to submit a test order.')+'<div class="card"><h2>Complete onboarding first</h2><p>The drug-test request is available after your consortium agreement is signed.</p><a class="btn btn-primary" href="/onboarding.html">Continue Onboarding</a></div>';return}
  const paidOrder=new URLSearchParams(location.search).get('order_id')||localStorage.getItem('s4u_owner_operator_paid_test_order')||'';
- if(!d.test_included&&!paidOrder){await navigatePortal(d.purchase_url||'/checkout.html?service=dot_5_panel_urine',{replace:true});return}
+ if(!d.test_included&&!paidOrder){root.innerHTML=pageHead('DRUG TESTING','Order a Drug Test','Choose the DOT 5-panel urine test.')+'<div class="card"><h2>DOT 5-Panel Urine Drug Test</h2><p>No unused test credit is available on this plan. An additional test requires checkout.</p><a class="btn btn-primary" href="/checkout.html?service=dot_5_panel_urine">Continue to Checkout</a></div>';return}
  root.innerHTML=pageHead(d.test_included?'INCLUDED TEST':'PAID TEST','Order your DOT 5-panel drug test','Order your DOT 5-panel drug test','Provide the information below. We will use your current or future location to identify the closest available collection site.')+`
  <div class="card order-test-card"><div class="agreement-callout"><strong>${d.test_included?'Included with '+esc(p.plan_name||'your plan'):'Paid DOT 5-panel drug test'}.</strong> ${d.test_included?'There is no additional charge for this included pre-employment test request.':'Your portal purchase has been received. Complete this form so Workforce DOT can schedule the closest available collection site.'}</div>
  <form id="drug-test-order-form"><div class="form-grid">
@@ -1000,7 +1001,8 @@ async function renderCurrentPage(){
   try{
     const required=featureByPage[page];
     if(required && state.entitlements && Object.keys(state.entitlements).length && state.entitlements[required]===false)throw new Error("This page is not included in your current Owner-Operator plan.");
-    const loader=LOADERS[page]||loadDashboard;
+    const loader=LOADERS[page];
+    if(!loader)throw new Error('The requested portal page is not registered: '+page);
     await loader();
   }finally{
     if(spinnerTimer)clearTimeout(spinnerTimer);
@@ -1046,7 +1048,7 @@ function bindSpaNavigation(){
       })();
       return;
     }
-    e.preventDefault();navigatePortal(u.pathname+u.search+u.hash);
+    e.preventDefault();if(next==='order-drug-test.html'){location.assign(u.pathname+u.search+u.hash);return;}navigatePortal(u.pathname+u.search+u.hash);
   });
   addEventListener('popstate',()=>{renderCurrentPage().catch(e=>{console.error(e);errorView(e)})});
   document.addEventListener('pointerenter',e=>{
