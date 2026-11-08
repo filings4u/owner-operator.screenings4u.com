@@ -13,6 +13,7 @@ const NAV=[
   ["programs.html","≡","DOT Program"],
   ["consortium.html","◉","Consortium"],
   ["testing.html","◆","Testing"],
+  ["occupational-health.html","✚","Occupational Health"],
   ["order-drug-test.html","＋","Order Drug Test"],
   ["results.html","✓","Results"],
   ["compliance.html","⚑","Compliance"],
@@ -31,6 +32,7 @@ const featureByPage={
   "programs.html":"programs",
   "consortium.html":"random_pool",
   "testing.html":"testing_orders",
+  "occupational-health.html":"testing_orders",
   "results.html":"results_summary",
   "compliance.html":"compliance",
   "rtd.html":"rtd_follow_up",
@@ -638,6 +640,19 @@ async function loadTesting(){
  table(["Order","Reason","Test type","Status","Deadline","Created"],rows.map(x=>`<tr><td>${esc(x.order_number||x.id)}</td><td>${esc(x.reason)}</td><td>${esc(x.test_type)}</td><td>${status(x.status)}</td><td>${fmt(x.collection_deadline)}</td><td>${fmt(x.created_at)}</td></tr>`),emptyState("No testing orders yet","When a drug or alcohol test is ordered for your account, its status and deadline will appear here.","◆"));
 }
 
+async function loadOccupationalHealth(){
+ const d=await edge("owner-operator-actions",{legacy_endpoint:"owner-operator-occupational-health",action:"list"});
+ const orders=d.physicals||[];
+ const rows=orders.map(x=>'<tr><td><strong>'+esc(x.reference_number)+'</strong></td><td>'+esc(x.donor_name)+'</td><td>'+esc(x.physical_type==='NON_DOT'?'Non-DOT Physical':'DOT Physical')+'</td><td>'+esc(x.status)+'</td><td>'+esc(x.donor_pass?.pass_number||'—')+'</td><td>'+(x.donor_pass?.status==='issued'?'<button class="btn primary" data-occupational-pass="'+esc(x.id)+'">Download Donor Pass</button>':'Awaiting pass')+'</td></tr>');
+ document.getElementById('page-content').innerHTML=pageHead('OCCUPATIONAL HEALTH','Occupational physicals','View and download donor passes securely delivered to your Owner-Operator account.')+table(['Order','Donor','Physical','Status','Pass','Actions'],rows,emptyState('No delivered physicals','Your issued donor passes will appear here when Testing Management releases them.','✚'));
+ document.querySelectorAll('[data-occupational-pass]').forEach(btn=>btn.onclick=()=>{
+  const x=orders.find(z=>z.id===btn.dataset.occupationalPass),p=x?.donor_pass;if(!p)return;
+  const w=window.open('','_blank');if(!w){alert('Allow popups to download the donor pass.');return}w.opener=null;
+  const html='<!doctype html><html><head><title>screenings4u Occupational Health Donor Pass</title><style>body{font-family:Arial,sans-serif;color:#102f55;margin:35px auto;padding:20px;max-width:720px}.brand{background:#102f55;color:white;padding:24px;font-size:24px;font-weight:bold}h1{color:#ed6b20}table{width:100%;border-collapse:collapse}td{padding:12px;border-bottom:1px solid #eee}@media print{button{display:none}}</style></head><body><div class="brand">screenings4u</div><h1>Occupational Health Donor Pass</h1><table><tr><td>Pass Number</td><td>'+esc(p.pass_number)+'</td></tr><tr><td>Donor</td><td>'+esc(x.donor_name)+'</td></tr><tr><td>Physical</td><td>'+esc(x.physical_type)+'</td></tr><tr><td>Collection Site</td><td>'+esc(p.collection_site_name||'To be assigned')+'</td></tr><tr><td>Address</td><td>'+esc(p.collection_site_address||'')+'</td></tr><tr><td>Confirmation</td><td>'+esc(p.confirmation_code||'')+'</td></tr></table><p>'+esc(p.instructions||'Present this authorization and valid photo ID.')+'</p><button onclick="window.print()">Print / Save as PDF</button></body></html>';
+  w.document.open();w.document.write(html);w.document.close();
+ });
+}
+
 async function loadResults(){
  const d=await owner("results"), rows=d.results||[];
  document.getElementById("page-content").innerHTML=pageHead("RESULTS","Testing results","View result summaries made available to your account.")+
@@ -950,7 +965,7 @@ async function loadSupport(){
 const LOADERS={
   "onboarding.html":loadOnboarding,"clearinghouse-setup.html":loadClearinghouseSetup,"checkout.html":loadCheckout,
   "order-drug-test.html":loadDrugTestOrder,"dashboard.html":loadDashboard,"profile.html":loadProfile,"drivers.html":loadDrivers,
-  "programs.html":loadPrograms,"consortium.html":loadConsortium,"testing.html":loadTesting,"results.html":loadResults,
+  "programs.html":loadPrograms,"consortium.html":loadConsortium,"testing.html":loadTesting,"occupational-health.html":loadOccupationalHealth,"results.html":loadResults,
   "compliance.html":loadCompliance,"rtd.html":loadRTD,"documents.html":loadDocuments,"reports.html":loadReports,
   "billing.html":loadBilling,"notifications.html":loadNotifications,"users.html":loadUsers,"audit-history.html":loadAudit,"support.html":loadSupport
 };
