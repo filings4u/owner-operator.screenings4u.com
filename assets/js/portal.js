@@ -19,6 +19,7 @@ const NAV=[
   ["compliance.html","⚑","Compliance"],
   ["rtd.html","↻","Return-to-Duty"],
   ["documents.html","▤","Documents"],
+  ["legal-documents.html","▤","Signed Legal Documents"],
   ["reports.html","▥","Reports"],
   ["billing.html","$","Billing"],
   ["notifications.html","●","Notifications"],
