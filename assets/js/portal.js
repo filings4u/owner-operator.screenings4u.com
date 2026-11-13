@@ -1067,7 +1067,7 @@ function bindSpaNavigation(){
       })();
       return;
     }
-    e.preventDefault();if(next==='order-drug-test.html'){location.assign(u.pathname+u.search+u.hash);return;}navigatePortal(u.pathname+u.search+u.hash);
+    e.preventDefault();if(next==='messages.html'||next==='order-drug-test.html'){location.assign(u.pathname+u.search+u.hash);return;}navigatePortal(u.pathname+u.search+u.hash);
   });
   addEventListener('popstate',()=>{renderCurrentPage().catch(e=>{console.error(e);errorView(e)})});
   document.addEventListener('pointerenter',e=>{
