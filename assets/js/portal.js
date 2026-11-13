@@ -25,6 +25,7 @@ const NAV=[
   ["notifications.html","●","Notifications"],
   ["users.html","♟","Users"],
   ["audit-history.html","≣","Audit History"],
+  ["messages.html","✉","Private C/TPA Messages"],
   ["support.html","?","Support"]
 ];
 
